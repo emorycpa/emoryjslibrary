@@ -1,193 +1,8 @@
 (function(app){
-    const ajax = app.namespace('util.ajax');
-    
-    // Basic non function
-    ajax.noop = function noop() {};
-    
-    /**
-     * @preserve jquery-param (c) 2015 KNOWLEDGECODE | MIT
-     * https://github.com/knowledgecode/jquery-param/blob/master/jquery-param.js
-     */
-    // jQuery like param util
-    // Fix Date object handling to return ISO String 
-    ajax.param = function param (a) {
-        var s = [];
-        var add = function (k, v) {
-            v = typeof v === 'function' ? v() : v;
-            v = v === null ? '' : v === undefined ? '' : v instanceof Date ? v.toISOString() : v;
-            s[s.length] = encodeURIComponent(k) + '=' + encodeURIComponent(v);
-        };
-        var buildParams = function (prefix, obj) {
-            var i, len, key;
-            if (prefix) {
-                if (Array.isArray(obj)) {
-                    for (i = 0, len = obj.length; i < len; i++) {
-                        buildParams(
-                            prefix + '[' + (typeof obj[i] === 'object' && obj[i] ? i : '') + ']',
-                            obj[i]
-                        );
-                    }
-                } else if (String(obj) === '[object Object]') {
-                    for (key in obj) {
-                        buildParams(prefix + '[' + key + ']', obj[key]);
-                    }
-                } else {
-                    add(prefix, obj);
-                }
-            } else if (Array.isArray(obj)) {
-                for (i = 0, len = obj.length; i < len; i++) {
-                    add(obj[i].name, obj[i].value);
-                }
-            } else {
-                for (key in obj) {
-                    buildParams(key, obj[key]);
-                }
-            }
-            return s;
-        };
-        return buildParams('', a).join('&');
-    };
-
-    ajax.formData = function formData(obj){
-        let returnFormData = new FormData();
-        if(String(obj) === '[object Object]' && obj.hasOwnProperty){
-            for(let key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    let value = obj[key];
-                    if(value === null || value === undefined){
-                        returnFormData.append(key, '');
-                    } else if (value instanceof Date) {
-                        returnFormData.append(key, value.toISOString());
-                    } else if (String(value) === '[object Object]'  || Array.isArray(value)){
-                        returnFormData.append(key, JSON.stringify(value));
-                    } else {
-                        returnFormData.append(key, value);
-                    }
-                }
-            }
-        } else if (obj.tagName && obj.tagName.toLowerCase() == 'form') {
-            returnFormData = new FormData(obj);
-        }
-
-        return returnFormData;
-    }
-
-    // JSONP with Promise return
-    ajax.jsonp = function jsonp(url, options) {
-        options = options || {};
-    
-        const id = options.callbackFn || app.namespace('util.random').randomFnName();
-        const callback = options.callbackParam || 'callback';
-        const timeout = options.timeout ? options.timeout : 15000;
-        const target = document.getElementsByTagName('script')[0] || document.head;
-        const data = options.data || {};
-        const Promise = app.namespace('util').promise;
-        let script;
-        let timer;
-        let cleanup;
-        let cancel;
-        let promise;
-    
-        cleanup = function() {
-            // Remove the script tag.
-            if (script && script.parentNode) {
-                script.parentNode.removeChild(script);
-            }
-    
-            window[id] = ajax.noop;
-    
-            if (timer) {
-                clearTimeout(timer);
-            }
-        };
-        
-        promise = new Promise(function(resolve, reject) {
-            if (timeout) {
-                timer = setTimeout(function() {
-                    cleanup();
-                    reject(new Error('Timeout'));
-                }, timeout);
-            }
-    
-            window[id] = function(data) {
-                cleanup();
-                resolve(data);
-            };
-    
-            // Add querystring component
-            url += (~url.indexOf('?') ? '&' : '?') + callback + '=' + encodeURIComponent(id) + (Object.keys(data).length !== 0 ? ajax.param(data) : '') ;
-            url = url.replace('?&', '?');
-    
-            // Create script.
-            script = document.createElement('script');
-            script.src = url;
-            //Fix for cache issue
-            setTimeout(function(){target.parentNode.insertBefore(script, target);},1);
-        
-            cancel = function() {
-                if (window[id]) {
-                    cleanup();
-                    reject(new Error('Canceled'));
-                }
-            };
-    
-        });
-    
-        return {
-            promise: promise,
-            cancel: cancel
-        };
-    };
-
-    // praseHeaders function modified to use mondern javascript methods
-    // Copyright (c) 2014 David Björklund
-
-    // This software is released under the MIT license:
-
-    // Permission is hereby granted, free of charge, to any person obtaining a copy
-    // of this software and associated documentation files (the "Software"), to deal
-    // in the Software without restriction, including without limitation the rights
-    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    // copies of the Software, and to permit persons to whom the Software is
-    // furnished to do so, subject to the following conditions:
-
-    // The above copyright notice and this permission notice shall be included in
-    // all copies or substantial portions of the Software.
-
-    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    // THE SOFTWARE.
-
-    const ParseHeaders = function parseHeaders (headers) {
-        if (!headers)
-          return {}
-      
-        let result = {};
-        
-        headers.toString().trim().split('\n').forEach(
-            function (row) {
-                let index = row.indexOf(':')
-                  , key = row.slice(0, index).trim().toLowerCase()
-                  , value = row.slice(index + 1).trim()
-        
-                if (typeof(result[key]) === 'undefined') {
-                  result[key] = value
-                } else if (isArray(result[key])) {
-                  result[key].push(value)
-                } else {
-                  result[key] = [ result[key], value ]
-                }
-              }
-        );
-      
-        return result;
-
-    };
-
+    const ajax = app.namespace('ajax');
+    const NSajaxUtils = 'ajax.util';
+    const NSUtils = 'util';
+    const NSRandomUtils = 'util.random';
     //Based on 
     /*
     * Copyright 2015 Scott Brady
@@ -242,7 +57,7 @@
              
         XMLHttpRequestPromise.prototype.send = function(options) {
             // Inject localize Promise function
-            const Promise = app.namespace('util').promise;
+            const Promise = app.namespace(NSUtils).promise;
             options = Object.assign({}, XMLHttpRequestPromise.DEFAULTS, options);
             return new Promise((function(_this) {
                 return function(resolve, reject) {
@@ -296,7 +111,7 @@
                 _this._attachWindowUnload();
                 // MUTATE URL if URL Method
                 if(_this.constructor.URL_METHODS.indexOf(options.method) > -1 && (options.data != null)){
-                    options.url += (~options.url.indexOf('?') ? '&' : '?') + (Object.keys(options.data).length !== 0 ? ajax.param(options.data) : '') ;
+                    options.url += (~options.url.indexOf('?') ? '&' : '?') + (Object.keys(options.data).length !== 0 ? app.namespace(NSajaxUtils).param(options.data) : '') ;
                     options.url = options.url.replace('?&', '?');
                 }
                 xhr.open(options.method, options.url, options.async, options.username, options.password);
@@ -325,13 +140,13 @@
                     } 
                     // FormData send
                     else if ((options.data != null) && options.sendAsFormData && !options.headers['Content-Type']) {
-                        return xhr.send(ajax.formData(options.data));
+                        return xhr.send(app.namespace(NSajaxUtils).formData(options.data));
                     } 
                     // One of the standard form methods
                     else if(_this.constructor.FORM_METHOS.indexOf(options.method) > -1){
                         // Do special if urlendcoded
                         if(options.headers['Content-Type'].indexOf('application/x-www-form-urlencoded')) {
-                            return xhr.send(ajax.param(options.data));
+                            return xhr.send(app.namespace(NSajaxUtils).param(options.data));
                         } 
                         // Otherwise use native string method
                         else {
@@ -394,7 +209,7 @@
          */
       
         XMLHttpRequestPromise.prototype._getHeaders = function() {
-          return ParseHeaders(this._xhr.getAllResponseHeaders());
+          return app.namespace(NSajaxUtils).parseHeaders(this._xhr.getAllResponseHeaders());
         };
       
       
@@ -407,8 +222,8 @@
         XMLHttpRequestPromise.prototype._getResponseData = function() {
             let response;
             response = typeof this._xhr.responseText === 'string' ? this._xhr.responseText : '';
-            let responseContentType = (this._xhr.getResponseHeader('Content-Type') || '').split(';')[0];
-            let parser = new DOMParser();
+            const responseContentType = (this._xhr.getResponseHeader('Content-Type') || '').split(';')[0];
+            const parser = new DOMParser();
             if(this.options.returnType === 'auto') {
                 if( responseContentType.indexOf('application/json') > -1) {
                     response = JSON.parse(response + '');

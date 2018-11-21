@@ -2,37 +2,37 @@
 
     const first = app.namespace('first');
     const NSfirstUrls = 'first.urls';
-    const NSutilAjax = 'util.ajax';
+    const NSajax = 'ajax';
     const NSutil = 'util';
     //Directory listing
     first.department = function emoryFirstDepartment(departments) {
         const urls = app.namespace(NSfirstUrls);
-        const utils = app.namespace(NSutilAjax);
-        return utils.jsonp(urls.department(departments)).promise;
+        const ajax = app.namespace(NSajax);
+        return ajax.jsonp(urls.department(departments));
     }
 
     function emoryFirstProfile(id) {
         const urls = app.namespace(NSfirstUrls);
-        const utils = app.namespace(NSutilAjax);
-        return utils.jsonp(urls.profile(id)).promise;
+        const ajax = app.namespace(NSajax);
+        return ajax.jsonp(urls.profile(id));
     }
 
     function emoryFirstProfessional(id) {
         const urls = app.namespace(NSfirstUrls);
-        const utils = app.namespace(NSutilAjax);
-        return utils.jsonp(urls.professional(id)).promise;
+        const ajax = app.namespace(NSajax);
+        return ajax.jsonp(urls.professional(id));
     }
 
     function emoryFirstTeaching(id) {
         const urls = app.namespace(NSfirstUrls);
-        const utils = app.namespace(NSutilAjax);
-        return utils.jsonp(urls.teaching(id)).promise;
+        const ajax = app.namespace(NSajax);
+        return ajax.jsonp(urls.teaching(id));
     }
 
     function emoryFirstPublications(id) {
         const urls = app.namespace(NSfirstUrls);
-        const utils = app.namespace(NSutilAjax);
-        return utils.jsonp(urls.publications(id)).promise;
+        const ajax = app.namespace(NSajax);
+        return ajax.jsonp(urls.publications(id));
     }
 
     first.profile = function emoryFirstFullProfile(id) {
