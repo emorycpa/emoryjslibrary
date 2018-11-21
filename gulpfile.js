@@ -9,6 +9,7 @@ gulp.task('build', function() {
     return streamqueue({ objectMode: true },
         gulp.src('./src/*.js'),
         gulp.src('./src/util/**/*.js'),
+        gulp.src('./src/ajax/**/*.js'),
         gulp.src('./src/first/**/*.js'),
         gulp.src('./src/dom/**/*.js')
     )
