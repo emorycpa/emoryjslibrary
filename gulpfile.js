@@ -11,7 +11,9 @@ gulp.task('build', function() {
         gulp.src('./src/util/**/*.js'),
         gulp.src('./src/ajax/**/*.js'),
         gulp.src('./src/first/**/*.js'),
-        gulp.src('./src/dom/**/*.js')
+        gulp.src('./src/dom/**/*.js'),
+        gulp.src('./src/trumba/**/*.js'),
+        gulp.src('./src/tests/**/*.js')
     )
         .pipe(concat('emory.js'))
         .pipe(gulp.dest('./dist'))

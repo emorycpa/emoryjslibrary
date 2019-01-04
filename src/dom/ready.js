@@ -11,4 +11,4 @@
             fn();
         }
     }
-})(emory, document)
+})(emory, document);
